@@ -4,6 +4,9 @@ import plotly.express as px
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
+# Sample set of bullying-related keywords (expand as needed)
+BULLYING_KEYWORDS = ['hate', 'attack', 'abuse', 'bully', 'harassment', 'violence', 'troll']
+
 st.set_page_config(page_title="Social Media Bullying Trends", layout="wide")
 
 # Load dataset
@@ -42,6 +45,26 @@ if bullying_only:
 
 filtered_df = df[mask]
 
+# === Input Section for User to Classify Bullying or Not ===
+st.markdown("### 📝 Enter a Post Title or Comment to Check for Bullying")
+user_input = st.text_area("Enter text here:")
+
+def is_bullying(text):
+    """ Simple keyword-based classification for bullying detection """
+    # Convert the input text to lowercase for case-insensitive comparison
+    text = text.lower()
+    for keyword in BULLYING_KEYWORDS:
+        if keyword in text:
+            return True
+    return False
+
+if user_input:
+    # Check if the input text contains any bullying-related keywords
+    if is_bullying(user_input):
+        st.success("✅ This is likely bullying.")
+    else:
+        st.info("🔍 This doesn't appear to be bullying.")
+
 # === KPIs ===
 st.markdown("### 📌 Key Metrics")
 col1, col2, col3, col4 = st.columns(4)
@@ -50,23 +73,15 @@ col2.metric("% Bullying Posts", f"{(filtered_df['Bullying'].mean()) * 100:.1f}%"
 col3.metric("Most Active Subreddit", filtered_df['Subreddit'].mode().values[0] if not filtered_df.empty else "N/A")
 col4.metric("Top Platform", filtered_df['Platform'].mode().values[0] if not filtered_df.empty else "N/A")
 
-# === Granular Bullying Trend (Hourly) ===
+# === Bullying Trend by Month and Year ===
 st.markdown("### 📈 Bullying Trend by Month and Year")
-# Create a new 'Year-Month' column for grouping and convert it to string format
 filtered_df['Year-Month'] = filtered_df['Timestamp (UTC)'].dt.to_period('M').astype(str)
-
-# Group by the 'Year-Month' and count bullying posts
 trend_monthly = filtered_df[filtered_df['Bullying'] == 1].groupby('Year-Month').size().reset_index(name='Bullying Posts')
-
-# Plot the trend over months and years
 fig_trend_monthly = px.line(trend_monthly, x='Year-Month', y='Bullying Posts', 
                             title="Bullying Posts per Month and Year", 
                             labels={'Year-Month': 'Month and Year', 'Bullying Posts': 'Number of Bullying Posts'})
 fig_trend_monthly.update_layout(xaxis_title="Month and Year", yaxis_title="Bullying Posts")
-
 st.plotly_chart(fig_trend_monthly, use_container_width=True)
-
-
 
 # === Top Subreddits ===
 st.markdown("### 📊 Top Subreddits by Bullying Posts")
@@ -90,11 +105,10 @@ st.plotly_chart(fig_engagement_bar, use_container_width=True)
 # === Word Cloud for Topics ===
 st.markdown("### 🧠 Word Cloud of Topics")
 wordcloud_data = ' '.join(filtered_df['Topic'].dropna().astype(str))  # Join all topics into a single string
-wordcloud = WordCloud(width=800, height=400, background_color='black').generate(wordcloud_data)
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(wordcloud_data)
 
 # Plot the WordCloud image
 plt.figure(figsize=(10, 5))
 plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis("off")
 st.pyplot(plt)
-

@@ -51,12 +51,20 @@ col3.metric("Most Active Subreddit", filtered_df['Subreddit'].mode().values[0] i
 col4.metric("Top Platform", filtered_df['Platform'].mode().values[0] if not filtered_df.empty else "N/A")
 
 # === Granular Bullying Trend (Hourly) ===
-st.markdown("### 📈 Bullying Trend by Hour")
-trend_hourly = filtered_df.groupby(['Date', 'Hour'])['Bullying'].sum().reset_index()
-fig_trend_hourly = px.line(trend_hourly, x='Hour', y='Bullying', color='Date', title="Hourly Bullying Posts")
-fig_trend_hourly.update_layout(xaxis_title="Hour of Day", yaxis_title="Bullying Posts", showlegend=False)
-st.plotly_chart(fig_trend_hourly, use_container_width=True)
+st.markdown("### 📈 Bullying Trend by Month and Year")
+# Create a new 'Year-Month' column for grouping
+filtered_df['Year-Month'] = filtered_df['Timestamp (UTC)'].dt.to_period('M')
 
+# Group by the 'Year-Month' and count bullying posts
+trend_monthly = filtered_df[filtered_df['Bullying'] == 1].groupby('Year-Month').size().reset_index(name='Bullying Posts')
+
+# Plot the trend over months and years
+fig_trend_monthly = px.line(trend_monthly, x='Year-Month', y='Bullying Posts', 
+                            title="Bullying Posts per Month and Year", 
+                            labels={'Year-Month': 'Month and Year', 'Bullying Posts': 'Number of Bullying Posts'})
+fig_trend_monthly.update_layout(xaxis_title="Month and Year", yaxis_title="Bullying Posts")
+
+st.plotly_chart(fig_trend_monthly, use_container_width=True)
 # === Top Subreddits ===
 st.markdown("### 📊 Top Subreddits by Bullying Posts")
 subreddit_stats = filtered_df[filtered_df['Bullying'] == 1]['Subreddit'].value_counts().reset_index()

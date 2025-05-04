@@ -90,7 +90,7 @@ st.plotly_chart(fig_engagement_bar, use_container_width=True)
 # === Word Cloud for Topics ===
 st.markdown("### 🧠 Word Cloud of Topics")
 wordcloud_data = ' '.join(filtered_df['Topic'].dropna().astype(str))  # Join all topics into a single string
-wordcloud = WordCloud(width=800, height=400, background_color='white').generate(wordcloud_data)
+wordcloud = WordCloud(width=800, height=400, background_color='black').generate(wordcloud_data)
 
 # Plot the WordCloud image
 plt.figure(figsize=(10, 5))

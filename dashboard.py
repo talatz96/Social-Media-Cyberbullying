@@ -52,8 +52,8 @@ col4.metric("Top Platform", filtered_df['Platform'].mode().values[0] if not filt
 
 # === Granular Bullying Trend (Hourly) ===
 st.markdown("### 📈 Bullying Trend by Month and Year")
-# Create a new 'Year-Month' column for grouping
-filtered_df['Year-Month'] = filtered_df['Timestamp (UTC)'].dt.to_period('M')
+# Create a new 'Year-Month' column for grouping and convert it to string format
+filtered_df['Year-Month'] = filtered_df['Timestamp (UTC)'].dt.to_period('M').astype(str)
 
 # Group by the 'Year-Month' and count bullying posts
 trend_monthly = filtered_df[filtered_df['Bullying'] == 1].groupby('Year-Month').size().reset_index(name='Bullying Posts')
@@ -65,6 +65,9 @@ fig_trend_monthly = px.line(trend_monthly, x='Year-Month', y='Bullying Posts',
 fig_trend_monthly.update_layout(xaxis_title="Month and Year", yaxis_title="Bullying Posts")
 
 st.plotly_chart(fig_trend_monthly, use_container_width=True)
+
+
+
 # === Top Subreddits ===
 st.markdown("### 📊 Top Subreddits by Bullying Posts")
 subreddit_stats = filtered_df[filtered_df['Bullying'] == 1]['Subreddit'].value_counts().reset_index()
